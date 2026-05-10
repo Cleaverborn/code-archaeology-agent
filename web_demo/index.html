@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Code Archaeology Agent System</title>
+<style>
+  :root {
+    --bg: #0d1117; --fg: #c9d1d9; --accent: #58a6ff;
+    --border: #30363d; --card-bg: #161b22; --code-bg: #1c2128;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--fg); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; line-height:1.6; }
+  .container { max-width:900px; margin:0 auto; padding:40px 20px; }
+  h1 { font-size:2rem; margin-bottom:8px; }
+  h1 span { color:var(--accent); }
+  h2 { font-size:1.3rem; margin:32px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--border); }
+  p { margin-bottom:12px; }
+  .badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:0.8rem; background:#1f6feb33; color:var(--accent); margin-right:6px; }
+  .card { background:var(--card-bg); border:1px solid var(--border); border-radius:8px; padding:20px; margin-bottom:16px; }
+  .card h3 { font-size:1rem; margin-bottom:8px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:16px; }
+  pre { background:var(--code-bg); border:1px solid var(--border); border-radius:6px; padding:14px; overflow-x:auto; font-size:0.85rem; }
+  code { font-family:'SFMono-Regular',Consolas,'Liberation Mono',monospace; }
+  .flow { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center; margin:20px 0; }
+  .flow-item { background:var(--card-bg); border:1px solid var(--border); border-radius:6px; padding:10px 16px; text-align:center; }
+  .flow-arrow { color:var(--accent); font-size:1.2rem; }
+  .risk-bar { height:8px; border-radius:4px; margin:4px 0 8px; }
+  .risk-safe { background:#3fb950; width:100%; }
+  .risk-low { background:#56d364; width:100%; }
+  .risk-med { background:#d29922; width:100%; }
+  .risk-high { background:#f78166; width:100%; }
+  .risk-crit { background:#f85149; width:100%; }
+  table { width:100%; border-collapse:collapse; margin:12px 0; }
+  th, td { padding:8px 12px; text-align:left; border-bottom:1px solid var(--border); }
+  th { color:var(--accent); }
+  a { color:var(--accent); text-decoration:none; }
+  a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1><span>&#9608;&#9608;</span> Code Archaeology Agent System</h1>
+<p>
+  <span class="badge">v1.0.0</span>
+  <span class="badge">Python 3.10+</span>
+  <span class="badge">MIT License</span>
+</p>
+<p>A multi-agent system for <strong>tracing long dependency chains</strong> across files and performing <strong>safe cross-file refactoring</strong> with risk assessment and automatic rollback.</p>
+
+<h2>Architecture</h2>
+<div class="flow">
+  <div class="flow-item">&#128270; Parser<br><small>AST Analysis</small></div>
+  <span class="flow-arrow">&#8594;</span>
+  <div class="flow-item">&#128268; Graph Engine<br><small>Dependency Graph</small></div>
+  <span class="flow-arrow">&#8594;</span>
+  <div class="flow-item">&#129302; 4 Agents<br><small>Cooperative System</small></div>
+  <span class="flow-arrow">&#8594;</span>
+  <div class="flow-item">&#9989; Refactoring<br><small>Safe Execution</small></div>
+</div>
+
+<h2>Agents</h2>
+<div class="grid">
+  <div class="card">
+    <h3>&#127757; Archaeologist</h3>
+    <p>Traces dependency chains upstream & downstream. Maps call graphs, detects circular deps, finds entry points.</p>
+  </div>
+  <div class="card">
+    <h3>&#128221; Planner</h3>
+    <p>Designs multi-file refactoring plans. 6 operations: rename, extract, move, change-signature, remove, inline.</p>
+  </div>
+  <div class="card">
+    <h3>&#128736; Executor</h3>
+    <p>Applies plans with backup & rollback. File edits ordered bottom-to-top to preserve line numbers.</p>
+  </div>
+  <div class="card">
+    <h3>&#128270; Verifier</h3>
+    <p>Validates correctness: AST syntax check, reference integrity, dead code detection, test discovery.</p>
+  </div>
+</div>
+
+<h2>Risk Model</h2>
+<table>
+  <tr><th>Level</th><th>Condition</th><th>Example</th></tr>
+  <tr><td style="color:#3fb950">SAFE</td><td>0 references</td><td>Remove unused import</td></tr>
+  <tr><td style="color:#56d364">LOW</td><td>private &lt;5 refs</td><td>Rename __helper</td></tr>
+  <tr><td style="color:#d29922">MEDIUM</td><td>public 10-50 refs</td><td>Rename UserService.create_user</td></tr>
+  <tr><td style="color:#f78166">HIGH</td><td>50-100 refs</td><td>Change Database.connect()</td></tr>
+  <tr><td style="color:#f85149">CRITICAL</td><td>&gt;100 refs</td><td>Change BaseModel.save()</td></tr>
+</table>
+
+<h2>Quick Start</h2>
+<pre><code>pip install -e .
+# Archaeology report
+code-archaeology --dir . archaeology my_function
+
+# Cross-file rename (dry run)
+code-archaeology --dir . rename old_name new_name
+
+# Full impact analysis
+code-archaeology --dir . impact MyClass
+
+# Codebase health check
+code-archaeology --dir . integrity</code></pre>
+
+<h2>Python API</h2>
+<pre><code>from code_archaeology import Orchestrator
+
+orch = Orchestrator("/path/to/project")
+orch.build_graph()
+
+# Archaeology
+report = orch.archaeology("my_function")
+impact = orch.impact_analysis("MyClass")
+
+# Plan & execute
+plan = orch.plan_rename("old_name", "new_name")
+preview = orch.execute(plan, dry_run=True)   # Preview
+result = orch.execute(plan, create_backup=True)  # Apply</code></pre>
+
+<h2>Project Stats</h2>
+<div class="grid">
+  <div class="card"><h3>5,013</h3><p>Lines of Python code</p></div>
+  <div class="card"><h3>24</h3><p>Source files</p></div>
+  <div class="card"><h3>4</h3><p>Cooperative agents</p></div>
+  <div class="card"><h3>6</h3><p>Refactoring operations</p></div>
+  <div class="card"><h3>15</h3><p>CLI subcommands</p></div>
+  <div class="card"><h3>25+</h3><p>Test cases</p></div>
+</div>
+
+<p style="margin-top:32px;color:#8b949e;font-size:0.85rem;">
+  GitHub: <a href="https://github.com/Cleaverborn/code-archaeology-agent">github.com/Cleaverborn/code-archaeology-agent</a>
+</p>
+
+</div>
+</body>
+</html>
